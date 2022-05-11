@@ -165,3 +165,48 @@ This is the output:
         It´s the 3th time in main function
         It´s the 3th time in coroutine                                                                     
                                                                                         
+You can avoid to use the awaitable by creating the handle in the return_object and returning it to the caller using the get_return_object method from promise_type.
+An example:
+                 
+        #include <concepts>
+        #include <coroutine>
+        #include <exception>
+        #include <iostream>
+
+        struct return_object {
+                struct promise_type {
+                        return_object get_return_object() {
+                                return {
+                                        //return the handle
+                                        .handle_ = std::coroutine_handle<promise_type>::from_promise(*this)
+                                };
+                        }
+                        std::suspend_never initial_suspend() { return {}; }
+                        std::suspend_never final_suspend() noexcept { return {}; }
+                        void unhandled_exception() {}
+                };
+                //create the handle
+                std::coroutine_handle<promise_type> handle_;
+                operator std::coroutine_handle<promise_type>() const { return handle_; }
+                operator std::coroutine_handle<>() const { return handle_; }
+        };
+
+        return_object foo()
+        {
+                for (int i = 1;; ++i) {
+                        co_await std::suspend_always{}; 
+                        std::cout << "It´s the " << i << "th time in coroutine" << std::endl;
+                }          
+        }
+
+        int main()
+        {
+                //now we have to take the handler from foo
+                std::coroutine_handle<> handle = foo();          
+                for (int i = 1; i < 4; ++i) {
+                        std::cout << "It´s the " << i << "th time in main function" << std::endl;
+                        handle();
+                }
+                handle.destroy();
+        }       
+The output is the same.                                                                                
