@@ -383,3 +383,63 @@ This is the output
         1
         It´s in main function
         It´s in coroutine
+
+## co_yield & co_return example
+        
+        #include <concepts>
+        #include <coroutine>
+        #include <exception>
+        #include <iostream>
+
+        struct return_object {
+                struct promise_type {
+                        std::string message;
+                        return_object get_return_object() {
+                                return {
+                                        .handle_ = std::coroutine_handle<promise_type>::from_promise(*this)
+                                };
+                        }
+                        std::suspend_never initial_suspend() { return {}; }
+                        std::suspend_always final_suspend() noexcept { return {}; }
+                        void unhandled_exception() {}
+                        std::suspend_always yield_value(auto value) {
+                                message = value;
+                                return {};
+                        }
+                        std::suspend_always return_value(auto value) {
+                                message = value;
+                                return {};
+                        }
+                };
+                std::coroutine_handle<promise_type> handle_;
+        };
+
+        return_object foo()
+        {
+            for (int i = 1; i < 4; ++i) {
+                auto value = "It´s the " +  std::to_string(i) + "th time in coroutine";
+                co_yield value;
+            }   
+            co_return "It´s last time in coroutine";         
+        }
+
+        int main()
+        {
+                auto handle = foo().handle_;                  
+                auto &promise = handle.promise();                    
+                std::cout << "It´s in main function" << std::endl;  
+                while(!handle.done()){                    
+                    std::cout << promise.message << std::endl; 
+                    handle();
+                }      
+                std::cout << promise.message << std::endl; 
+                handle.destroy();
+        }
+                                                         
+The output is
+                                                         
+        It´s in main function
+        It´s the 1th time in coroutine
+        It´s the 2th time in coroutine
+        It´s the 3th time in coroutine
+        It´s last time in coroutine                                                         
