@@ -201,12 +201,77 @@ An example:
 
         int main()
         {
-                //now we have to take the handler from foo
-                std::coroutine_handle<> handle = foo();          
+                //we create a pointer to a handle
+                std::coroutine_handle<> handle = foo();   
                 for (int i = 1; i < 4; ++i) {
                         std::cout << "It´s the " << i << "th time in main function" << std::endl;
                         handle();
                 }
                 handle.destroy();
         }       
-The output is the same.                                                                                
+The output is the same.
+                                                                                                
+What we did till now is to pass the control from the caller to the coroutine but we can send just the info in the promise object to main by changing the handle.
+An example:
+           
+        #include <concepts>
+        #include <coroutine>
+        #include <exception>
+        #include <iostream>
+
+        template<class promise_object>
+        //follows the same structure than the awaiter
+        struct getPromise {
+                //we will send the promise oject in place of the handle
+                promise_object *promise_;
+                bool await_ready() { return false; }
+                bool await_suspend(std::coroutine_handle<promise_object> handle) {
+                        promise_ = &handle.promise();
+                        return false; //to don´t suspend the coroutine till the promise is set in the coroutine.   
+                }
+                promise *await_resume() { return promise_; }
+        };
+
+        struct return_object {
+                struct promise_type {
+                        //add something to send, the value is set in the coroutine
+                        std::string message;
+                        return_object get_return_object() {
+                                return {
+                                        .handle_ = std::coroutine_handle<promise_type>::from_promise(*this)
+                                };
+                        }
+                        std::suspend_never initial_suspend() { return {}; }
+                        std::suspend_never final_suspend() noexcept { return {}; }
+                        void unhandled_exception() {}
+                };
+                std::coroutine_handle<promise_type> handle_;
+                operator std::coroutine_handle<promise_type>() const { return handle_; }
+        };
+
+        //Coroutine using co_await
+        return_object foo()
+        {
+                auto pointer_promise = co_await getPromise<return_object::promise_type>{};
+                for (int i = 1;; ++i) {
+                        //set the value
+                        pointer_promise->message = "It´s the " +  std::to_string(i) + "th time in coroutine";
+                        //suspend the coroutine now the value is set
+                        co_await std::suspend_always{}; 
+                }          
+        }
+
+        int main()
+        {
+                //create a pointer to a handle
+                std::coroutine_handle<return_object::promise_type> handle = foo();
+                //from this pointer handle only need the promise object
+                return_object::promise_type &promise = handle.promise();        
+                for (int i = 1; i < 4; ++i) {
+                        std::cout << "It´s the " << i << "th time in main function" << std::endl;
+                        //print the promise param that we set in the coroutine                                                                        
+                        std::cout << promise.message << std::endl;
+                        handle();
+                }
+                handle.destroy();
+        }
