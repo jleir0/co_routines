@@ -210,7 +210,7 @@ An example:
                 handle.destroy();
         }       
 The output is the same.
-                                                                                                
+### Transmit info                                                                                            
 What we did till now is to pass the control from the caller to the coroutine but we can send just the info in the promise object to main by changing the handle.
 An example:
            
@@ -220,8 +220,7 @@ An example:
         #include <iostream>
 
         template<class promise_object>
-        //follows the same structure than the awaiter
-        struct getPromise {
+        struct awaiter {
                 //we will send the promise oject in place of the handle
                 promise_object *promise_;
                 bool await_ready() { return false; }
@@ -252,7 +251,7 @@ An example:
         //Coroutine using co_await
         return_object foo()
         {
-                auto pointer_promise = co_await getPromise<return_object::promise_type>{};
+                auto pointer_promise = co_await awaiter<return_object::promise_type>{};
                 for (int i = 1;; ++i) {
                         //set the value
                         pointer_promise->message = "It´s the " +  std::to_string(i) + "th time in coroutine";
@@ -275,3 +274,112 @@ An example:
                 }
                 handle.destroy();
         }
+The output is the same.
+## co_yield
+Suspend execution returning a value, so using co_yeild, we can simplify the previous example by adding a yield_value method to the promise_type inside our return object.
+An example:
+                                                                 
+        #include <concepts>
+        #include <coroutine>
+        #include <exception>
+        #include <iostream>
+
+        struct return_object {
+                struct promise_type {
+                        std::string message;
+                        return_object get_return_object() {
+                                return {
+                                        .handle_ = std::coroutine_handle<promise_type>::from_promise(*this)
+                                };
+                        }
+                        std::suspend_never initial_suspend() { return {}; }
+                        std::suspend_never final_suspend() noexcept { return {}; }
+                        void unhandled_exception() {}
+                        //by addding this method we can modify the promise_object values to transmit
+                        std::suspend_always yield_value(auto value) {
+                                //store in message the value passed by co_yield
+                                message = value;
+                                return {};
+                        }
+                };
+                std::coroutine_handle<promise_type> handle_;
+        };
+
+        //Coroutine using co_yield
+        return_object foo()
+        {
+                for (int i = 1;; ++i) {
+                        auto value = "It´s the " +  std::to_string(i) + "th time in coroutine";
+                        co_yield value;
+                }          
+        }
+
+        int main()
+        {
+                auto handle = foo().handle_;        
+                auto &promise = handle.promise();       
+                for (int i = 1; i < 4; ++i) {
+                        std::cout << "It´s the " << i << "th time in main function" << std::endl;
+                        std::cout << promise.message << std::endl;
+                        handle();
+                }
+                handle.destroy();
+        } 
+                                                     
+## co_return
+co_return signal the end of a coroutine, there are three ways for a coroutine to signal that it is complete:
+- “co_return value;” to return a final value.
+- “co_return;” to end the coroutine without a final value.
+- let execution fall off the end of the function.
+                                                                 
+
+An example:
+                                                                 
+        #include <concepts>
+        #include <coroutine>
+        #include <exception>
+        #include <iostream>
+
+        struct return_object {
+                struct promise_type {
+                        std::string message;
+                        return_object get_return_object() {
+                                return {
+                                        .handle_ = std::coroutine_handle<promise_type>::from_promise(*this)
+                                };
+                        }
+                        std::suspend_never initial_suspend() { return {}; }
+                        std::suspend_always final_suspend() noexcept { return {}; }
+                        void unhandled_exception() {}
+                        std::suspend_always return_value(auto value) {
+                                //the value passed with co_return is stored in message
+                                message = value;
+                                return {};
+                        }
+                };
+                std::coroutine_handle<promise_type> handle_;
+        };
+
+        //Coroutine using co_return
+        return_object foo()
+        {
+                //complete execution returning a value
+                co_return "It´s in coroutine";        
+        }
+
+        int main()
+        {
+                auto handle = foo().handle_;     
+                //at this point coroutin is suspended at its final suspend point,        
+                std::cout << handle.done() << std::endl;    
+                auto &promise = handle.promise();       
+                std::cout << "It´s in main function" << std::endl;
+                std::cout << promise.message << std::endl;    
+                handle.destroy();
+        }
+        
+This is the output
+        
+        1
+        It´s in main function
+        It´s in coroutine
