@@ -443,3 +443,7 @@ The output is
         It´s the 2th time in coroutine
         It´s the 3th time in coroutine
         It´s last time in coroutine                                                         
+## Example
+In the next example we will code to produce a state machine with the next state diagram 
+![Diagrama en blanco](https://user-images.githubusercontent.com/40487776/168542986-c76fbd0b-2871-4bbb-963c-2c68a4a0d10d.png)
+                                              
