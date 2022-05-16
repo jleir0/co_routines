@@ -690,3 +690,7 @@ Output:
         The actual temperature is 19.90. Start charging at 94.20% of battery.
         The actual temperature is 19.98. Finish charging at 95.00% of battery.
         The actual temperature is 19.98. Finish at 95.00% of battery.
+
+## Compiler
+        
+Use compiler explorer or gcc 11.2 or older. Use the next flags -std=c++20 and -fcoroutines
