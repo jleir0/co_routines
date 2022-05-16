@@ -613,3 +613,80 @@ At last, our main function where we call the coroutines and define the states fu
                 }
             }
         }       
+
+Output:
+        
+        Start a new sequence
+        The actual temperature is 28.00. Cooling at 86.00% of battery.
+        The actual temperature is 20.00. Start charging at 22.00% of battery.
+        The actual temperature is 27.30. Finish charging at 95.00% of battery.
+        The actual temperature is 27.30. Cooling at 95.00% of battery.
+        The actual temperature is 19.90. Start charging at 35.80% of battery.
+        The actual temperature is 25.82. Finish charging at 95.00% of battery.
+        The actual temperature is 25.82. Cooling at 95.00% of battery.
+        The actual temperature is 19.92. Start charging at 47.80% of battery.
+        The actual temperature is 24.64. Finish charging at 95.00% of battery.
+        The actual temperature is 24.64. Cooling at 95.00% of battery.
+        The actual temperature is 19.94. Start charging at 57.40% of battery.
+        The actual temperature is 23.70. Finish charging at 95.00% of battery.
+        The actual temperature is 23.70. Cooling at 95.00% of battery.
+        The actual temperature is 19.90. Start charging at 64.60% of battery.
+        The actual temperature is 22.94. Finish charging at 95.00% of battery.
+        The actual temperature is 22.94. Cooling at 95.00% of battery.
+        The actual temperature is 19.94. Start charging at 71.00% of battery.
+        The actual temperature is 22.34. Finish charging at 95.00% of battery.
+        The actual temperature is 22.34. Cooling at 95.00% of battery.
+        The actual temperature is 19.94. Start charging at 75.80% of battery.
+        The actual temperature is 21.86. Finish charging at 95.00% of battery.
+        The actual temperature is 21.86. Cooling at 95.00% of battery.
+        The actual temperature is 19.96. Start charging at 79.80% of battery.
+        The actual temperature is 21.48. Finish charging at 95.00% of battery.
+        The actual temperature is 21.48. Cooling at 95.00% of battery.
+        The actual temperature is 19.98. Start charging at 83.00% of battery.
+        The actual temperature is 21.18. Finish charging at 95.00% of battery.
+        The actual temperature is 21.18. Cooling at 95.00% of battery.
+        The actual temperature is 19.98. Start charging at 85.40% of battery.
+        The actual temperature is 20.94. Finish charging at 95.00% of battery.
+        The actual temperature is 20.94. Cooling at 95.00% of battery.
+        The actual temperature is 19.94. Start charging at 87.00% of battery.
+        The actual temperature is 20.74. Finish charging at 95.00% of battery.
+        The actual temperature is 20.74. Cooling at 95.00% of battery.
+        The actual temperature is 19.94. Start charging at 88.60% of battery.
+        The actual temperature is 20.58. Finish charging at 95.00% of battery.
+        The actual temperature is 20.58. Cooling at 95.00% of battery.
+        The actual temperature is 19.98. Start charging at 90.20% of battery.
+        The actual temperature is 20.46. Finish charging% of battery.
+        The actual temperature is 20.46. Cooling at 95.00% of battery.
+        The actual temperature is 19.96. Start charging at 91.00% of battery.
+        The actual temperature is 20.36. Finish charging at 95.00% of battery.
+        The actual temperature is 20.36. Cooling at 95.00% of battery.
+        The actual temperature is 19.96. Start charging at 91.80% of battery.
+        The actual temperature is 20.28. Finish charging at 95.00% of battery.
+        The actual temperature is 20.28. Cooling at 95.00% of battery.
+        The actual temperature is 19.98. Start charging at 92.60% of battery.
+        The actual temperature is 20.22. Finish charging at 95.00% of battery.
+        The actual temperature is 20.22. Cooling at 95.00% of battery.
+        The actual temperature is 19.92. Start charging at 92.60% of battery.
+        The actual temperature is 20.16. Finish charging at 95.00% of battery.
+        The actual temperature is 20.16. Cooling at 95.00% of battery.
+        The actual temperature is 19.96. Start charging at 93.40% of battery.
+        The actual temperature is 20.12. Finish charging at 95.00% of battery.
+        The actual temperature is 20.12. Cooling at 95.00% of battery.
+        The actual temperature is 19.92. Start charging at 93.40% of battery.
+        The actual temperature is 20.08. Finish charging at 95.00% of battery.
+        The actual temperature is 20.08. Cooling at 95.00% of battery.
+        The actual temperature is 19.98. Start charging at 94.20% of battery.
+        The actual temperature is 20.06. Finish charging at 95.00% of battery.
+        The actual temperature is 20.06. Cooling at 95.00% of battery.
+        The actual temperature is 19.96. Start charging at 94.20% of battery.
+        The actual temperature is 20.04. Finish charging at 95.00% of battery.
+        The actual temperature is 20.04. Cooling at 95.00% of battery.
+        The actual temperature is 19.94. Start charging at 94.20% of battery.
+        The actual temperature is 20.02. Finish charging at 95.00% of battery.
+        The actual temperature is 20.02. Cooling at 95.00% of battery.
+        The actual temperature is 19.92. Cooling at 94.20% of battery.
+        The actual temperature is 20.00. Finish charging at 95.00% of battery.
+        The actual temperature is 20.00. Cooling at 95.00% of battery.
+        The actual temperature is 19.90. Start charging at 94.20% of battery.
+        The actual temperature is 19.98. Finish charging at 95.00% of battery.
+        The actual temperature is 19.98. Finish at 95.00% of battery.
