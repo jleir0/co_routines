@@ -1,6 +1,11 @@
 # Coroutines
-## What is?
+## Introduction
+A function is like always going to a different bar where you have to tell the waiter what you want, a coroutine is like always going to the same bar and that the waiter already knows what you want.
+Saves you time and resources.
+Coroutines are useful when you're going to want to run a task repeatedly remembering what happened last time.
+## What is a coroutine?
 A coroutine is a function that can suspend execution to be resumed later. 
+
 Coroutines are stackless: they suspend execution by returning to the caller and the data that is required to resume execution is stored separately from the stack. This allows for sequential code that executes asynchronously, and also supports algorithms on lazy-computed infinite sequences and other uses.
 
 A function is a coroutine if its definition does any of the following operators: co_return, co_yield amd co_await.
@@ -133,38 +138,36 @@ An example:
         //Coroutine using co_await
         return_object foo(std::coroutine_handle<> *handle)
         {
-            //pass the handler to the await_suspend method
-            awaiter wait{handle};
-            for (int i = 1;; ++i) {
-                co_await wait; //suspends the coroutine and returns control to the caller.
-                std::cout << "It´s the " << i << "th time in coroutine" << std::endl;                
-            }          
+                int fib1 = 0;
+                int fib2 = 1;
+                //pass the handler to the await_suspend method
+                awaiter wait{handle};
+                for (int i = 0;; ++i) {
+                        co_await wait; //suspends the coroutine and returns control to the caller.
+                        std::cout << fib1 << ", " << fib2 << ", ";
+                        fib1 = fib2 + fib1; 
+                        fib2 = fib2 + fib1;               
+                }          
         }
 
         int main()
         {
-            //we create a handle of type coroutine_handle
-            std::coroutine_handle<> handle;            
-            //pass the control of the handler to foo
-            foo(&handle);
-            for (int i = 1; i < 4; ++i) {
-                std::cout << "It´s the " << i << "th time in main function" << std::endl;
-                //handle() triggers one more iteration of the loop in counter
-                handle();
-            }
-            //To avoid leaking memory, destroy coroutine state 
-            handle.destroy();
+                //we create a handle of type coroutine_handle
+                std::coroutine_handle<> handle;            
+                //pass the control of the handler to foo
+                foo(&handle);
+                std::cout << "Fibonacci: ";
+                for (int i = 1; i < 11; ++i) {
+                        handle();
+                }
+                //To avoid leaking memory, destroy coroutine state 
+                handle.destroy();
         }
 
-This is the output:
-                                                                                        
-        It´s the 1th time in main function
-        It´s the 1th time in coroutine
-        It´s the 2th time in main function
-        It´s the 2th time in coroutine
-        It´s the 3th time in main function
-        It´s the 3th time in coroutine                                                                     
-                                                                                        
+This is the output:                                                                                        
+
+        Fibonacci: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181,
+                                       
 You can avoid to use the awaitable by creating the handle in the return_object and returning it to the caller using the get_return_object method from promise_type.
 An example:
                  
@@ -193,23 +196,31 @@ An example:
 
         return_object foo()
         {
-                for (int i = 1;; ++i) {
+                int fib1 = 0;
+                int fib2 = 1;
+                std::cout << "Fibonacci: ";
+                for (int i = 0;; ++i) {
                         co_await std::suspend_always{}; 
-                        std::cout << "It´s the " << i << "th time in coroutine" << std::endl;
-                }          
+                        std::cout << fib1 << ", " << fib2 << ", ";
+                        fib1 = fib2 + fib1; 
+                        fib2 = fib2 + fib1;               
+                }            
         }
 
         int main()
         {
                 //we create a pointer to a handle
-                std::coroutine_handle<> handle = foo();   
-                for (int i = 1; i < 4; ++i) {
-                        std::cout << "It´s the " << i << "th time in main function" << std::endl;
-                        handle();
+                std::coroutine_handle<> handle = foo();  
+                for (int i = 1; i < 11; ++i) {
+                         handle();
                 }
-                handle.destroy();
-        }       
-The output is the same.
+                handle.destroy();        
+        }
+
+This is the output:                                                                                        
+
+        Fibonacci: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181,
+                                       
 ### Transmit info                                                                                            
 What we did till now is to pass the control from the caller to the coroutine but we can send just the info in the promise object to main by changing the handle.
 An example:
@@ -252,11 +263,14 @@ An example:
         return_object foo()
         {
                 auto pointer_promise = co_await awaiter<return_object::promise_type>{};
-                for (int i = 1;; ++i) {
-                        //set the value
-                        pointer_promise->message = "It´s the " +  std::to_string(i) + "th time in coroutine";
-                        //suspend the coroutine now the value is set
+                int fib1 = 0;
+                int fib2 = 1;
+                std::cout << "Fibonacci: ";
+                for (int i = 0;; ++i) {
+                        pointer_promise->message = std::to_string(fib1) + ", " + std::to_string(fib2) + ", ";
                         co_await std::suspend_always{}; 
+                        fib1 = fib2 + fib1; 
+                        fib2 = fib2 + fib1;               
                 }          
         }
 
@@ -266,15 +280,19 @@ An example:
                 std::coroutine_handle<return_object::promise_type> handle = foo();
                 //from this pointer handle only need the promise object
                 return_object::promise_type &promise = handle.promise();        
-                for (int i = 1; i < 4; ++i) {
-                        std::cout << "It´s the " << i << "th time in main function" << std::endl;
+                for (int i = 1; i < 11; ++i) {
                         //print the promise param that we set in the coroutine                                                                        
-                        std::cout << promise.message << std::endl;
+                        std::cout << promise.message;
                         handle();
                 }
                 handle.destroy();
         }
-The output is the same.
+                                            
+
+This is the output:                                                                                        
+
+        Fibonacci: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181,
+                                                    
 ## co_yield
 Suspend execution returning a value, so using co_yeild, we can simplify the previous example by adding a yield_value method to the promise_type inside our return object.
 An example:
@@ -308,9 +326,14 @@ An example:
         //Coroutine using co_yield
         return_object foo()
         {
-                for (int i = 1;; ++i) {
-                        auto value = "It´s the " +  std::to_string(i) + "th time in coroutine";
-                        co_yield value;
+                int fib1 = 0;
+                int fib2 = 1;
+                std::cout << "Fibonacci: ";
+                for (int i = 0;; ++i) {
+                        auto value = std::to_string(fib1) + ", " + std::to_string(fib2) + ", ";
+                        fib1 = fib2 + fib1; 
+                        fib2 = fib2 + fib1;  
+                        co_yield value;             
                 }          
         }
 
@@ -318,13 +341,16 @@ An example:
         {
                 auto handle = foo().handle_;        
                 auto &promise = handle.promise();       
-                for (int i = 1; i < 4; ++i) {
-                        std::cout << "It´s the " << i << "th time in main function" << std::endl;
-                        std::cout << promise.message << std::endl;
+                for (int i = 1; i < 11; ++i) {
+                        std::cout << promise.message;
                         handle();
                 }
                 handle.destroy();
         } 
+                                                    
+This is the output:                                                                                        
+
+        Fibonacci: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181,
                                                      
 ## co_return
 co_return signal the end of a coroutine, there are three ways for a coroutine to signal that it is complete:
@@ -363,8 +389,16 @@ An example:
         //Coroutine using co_return
         return_object foo()
         {
-                //complete execution returning a value
-                co_return "It´s in coroutine";        
+                int fib1 = 0;
+                int fib2 = 1;
+                std::string message = "";
+                for (int i = 1; i<11; ++i) {
+                        auto value = std::to_string(fib1) + ", " + std::to_string(fib2) + ", ";
+                        fib1 = fib2 + fib1; 
+                        fib2 = fib2 + fib1;  
+                        message = message + value;          
+                }
+                co_return message;             
         }
 
         int main()
@@ -373,76 +407,43 @@ An example:
                 //at this point coroutin is suspended at its final suspend point,        
                 std::cout << handle.done() << std::endl;    
                 auto &promise = handle.promise();       
-                std::cout << "It´s in main function" << std::endl;
+                std::cout << "Fibonacci: ";
                 std::cout << promise.message << std::endl;    
                 handle.destroy();
         }
-        
-This is the output
-        
-        1
-        It´s in main function
-        It´s in coroutine
+                                                            
+This is the output:                                                                                        
 
-## co_yield & co_return example
+        Fibonacci: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181,
+
+# Comparition
         
-        #include <concepts>
-        #include <coroutine>
-        #include <exception>
         #include <iostream>
+        using namespace std;
 
-        struct return_object {
-                struct promise_type {
-                        std::string message;
-                        return_object get_return_object() {
-                                return {
-                                        .handle_ = std::coroutine_handle<promise_type>::from_promise(*this)
-                                };
-                        }
-                        std::suspend_never initial_suspend() { return {}; }
-                        std::suspend_always final_suspend() noexcept { return {}; }
-                        void unhandled_exception() {}
-                        std::suspend_always yield_value(auto value) {
-                                message = value;
-                                return {};
-                        }
-                        std::suspend_always return_value(auto value) {
-                                message = value;
-                                return {};
-                        }
-                };
-                std::coroutine_handle<promise_type> handle_;
-        };
+        int main() {
+                int n = 20;
+                int fibo[n];
+                int index = 0;
+                while (index < n) {
+                        if (index == 0)
+                                fibo[index] = 0;
+                        else if (index == 1)
+                                fibo[index] = 1;
+                        else
+                                fibo[index] = fibo[index - 1] + fibo[index - 2];
+                        index++;
+                }
+                cout << "Fibonacci: ";
+                for (int i = 0; i < n; i++)
+                cout << fibo[i] << "  ";
+        } 
 
-        return_object foo()
-        {
-            for (int i = 1; i < 4; ++i) {
-                auto value = "It´s the " +  std::to_string(i) + "th time in coroutine";
-                co_yield value;
-            }   
-            co_return "It´s last time in coroutine";         
-        }
+This is the output:                                                                                        
 
-        int main()
-        {
-                auto handle = foo().handle_;                  
-                auto &promise = handle.promise();                    
-                std::cout << "It´s in main function" << std::endl;  
-                while(!handle.done()){                    
-                    std::cout << promise.message << std::endl; 
-                    handle();
-                }      
-                std::cout << promise.message << std::endl; 
-                handle.destroy();
-        }
-                                                         
-The output is
-                                                         
-        It´s in main function
-        It´s the 1th time in coroutine
-        It´s the 2th time in coroutine
-        It´s the 3th time in coroutine
-        It´s last time in coroutine      
+        Fibonacci: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181,    
+       
+In a normal cpp function we need memory to store all the numbers of the sequence ****************************
                                                          
 ## Example
                                                          
