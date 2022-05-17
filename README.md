@@ -416,35 +416,38 @@ This is the output:
 
         Fibonacci: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181,
 
-# Comparition
+# Comparation
         
-        #include <iostream>
-        using namespace std;
+In a normal cpp function we need to store the numbers in an array and in each iteration pass the array and the index to a function. When the function returns the memory still being used.
+                                                                                                                 
+        void foo(int index, int fibo[]){
+                if (index == 0)
+                        fibo[index] = 0;
+                else if (index == 1)
+                        fibo[index] = 1;
+                else
+                        fibo[index] = fibo[index - 1] + fibo[index - 2];
+        }
 
         int main() {
                 int n = 20;
                 int fibo[n];
                 int index = 0;
                 while (index < n) {
-                        if (index == 0)
-                                fibo[index] = 0;
-                        else if (index == 1)
-                                fibo[index] = 1;
-                        else
-                                fibo[index] = fibo[index - 1] + fibo[index - 2];
+                        foo(index, fibo); 
                         index++;
                 }
-                cout << "Fibonacci: ";
+                cout << "Fibonacci :";
                 for (int i = 0; i < n; i++)
                 cout << fibo[i] << "  ";
-        } 
+        }
 
 This is the output:                                                                                        
 
         Fibonacci: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181,    
-       
-In a normal cpp function we need memory to store all the numbers of the sequence ****************************
-                                                         
+                                   
+ As we so in the previous examples, with a coroutine we don´t need this number of variables and to send it each time. In case of the coroutines, when the task finish the memory is released.   
+
 ## Example
                                                          
 In the next example we will code to produce a state machine with the next state diagram 
@@ -695,3 +698,7 @@ Output:
 ## Compiler
         
 Use compiler explorer or gcc 11.2 or older. Use the next flags -std=c++20 and -fcoroutines
+
+## Example
+01- https://en.cppreference.com/w/cpp/language/coroutines
+02- https://www.scs.stanford.edu/~dm/blog/c++-coroutines.html
